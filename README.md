@@ -36,7 +36,22 @@ gulp.task("watch:webpack:debug", helper.webpackTask("debug", { watch: true }));
 
 ```
 
-## Configuration
+Or use high level tasks helpers:
+
+```js
+helper.createBuildTask("build:debug", "debug", { fork: true })(gulp);
+
+helper.createWatchTask("watch:debug", "debug", { fork: true })(gulp);
+
+helper.createDevServerTask("start:debug", "debug", { fork: true })(gulp);
+
+```
+
+## Description
+
+**TODO**
+
+### Configuration
 
 This is the object with the fields:
 

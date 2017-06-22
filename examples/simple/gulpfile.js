@@ -6,6 +6,8 @@ const helper = require("../../")({
   }
 });
 
+// Low level primitives
+
 gulp.task("res:debug", helper.resourcesTask("debug"));
 gulp.task("watch:res:debug", helper.resourcesTask("debug", { watch: true }));
 
@@ -17,6 +19,8 @@ gulp.task("watch:tsc:debug", helper.tsExecTask("debug", { watch: true }));
 
 gulp.task("webpack:debug", helper.webpackTask("debug"));
 gulp.task("watch:webpack:debug", helper.webpackTask("debug", { watch: true }));
+
+// High level primitives
 
 helper.createBuildTask("build:debug", "debug", { fork: true })(gulp);
 
