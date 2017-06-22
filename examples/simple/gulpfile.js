@@ -6,6 +6,9 @@ const helper = require("../../")({
   }
 });
 
+gulp.task("res:debug", helper.resourcesTask("debug"));
+gulp.task("watch:res:debug", helper.resourcesTask("debug", { watch: true }));
+
 gulp.task("ts:debug", helper.tsTask("debug"));
 gulp.task("watch:ts:debug", helper.tsTask("debug", { watch: true }));
 

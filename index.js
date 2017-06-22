@@ -54,6 +54,12 @@ module.exports = function(userConfig = {}) {
       : []
   );
 
+  const resourcesGlob = [
+    `${config.srcDir}/**/*`
+  ].concat(
+    srcGlob.map(v => "!" + v)
+  );
+
   const tsOutDir = (target) => path.join(config.tsOutDir, target);
 
   const tsOutGlob = (target) => `${tsOutDir(target)}/**/*`;
@@ -67,6 +73,15 @@ module.exports = function(userConfig = {}) {
     if(typeof cfg === "string")
       return require(path.join(process.cwd(), cfg));
     return cfg;
+  };
+
+  const resourcesTask = (target, { watch = false } = {}) => () => {
+    const task = () => gulp.src(resourcesGlob)
+          .pipe(gulp.dest(tsOutDir(target)));
+    if(watch)
+      return gulpWatch(resourcesGlob, task);
+    else
+      return task();
   };
 
   const tsTask = (target, { watch = false } = {}) => () => {
@@ -120,6 +135,7 @@ module.exports = function(userConfig = {}) {
   };
 
   return {
+    resourcesTask,
     tsTask,
     tsExecTask,
     webpackTask
