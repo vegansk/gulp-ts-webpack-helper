@@ -71,8 +71,29 @@ module.exports = function(userConfig = {}) {
       return task;
   };
 
+  const scriptName = (name) => path.normalize(process.platform === 'win32' ? `${name}.cmd` : name);
+
+  const tsExecTask = (target, { watch = false } = {}) => (cb) => {
+    if(typeof config.tsconfig !== "string") {
+      cb(new Error("tsconfig property must be the path when using tsExecTask"));
+      return;
+    }
+    const args = ["--outDir", tsOutDir(target), "-p", config.tsconfig].concat(
+      watch ? ["--watch"] : []
+    );
+    const tsc = spawn(scriptName("./node_modules/.bin/tsc"), args, { stdio: "inherit", shell: true });
+    tsc.on("close", (code) => {
+      if(code !== 0)
+        cb(new Error(`tsc exited with the code ${code}`));
+      else
+        cb();
+    });
+  };
+
+
   return {
-    tsTask
+    tsTask,
+    tsExecTask
   };
 
 };
