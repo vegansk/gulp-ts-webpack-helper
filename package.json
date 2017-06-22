@@ -1,6 +1,6 @@
 {
   "name": "gulp-ts-webpack-helper",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Helper for the projects that uses gulp, typescript and webpack",
   "files": [
     "index.js"

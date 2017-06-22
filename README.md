@@ -15,7 +15,7 @@ First of all, you need to initialize helper:
 ```js
 
 const config = { /* described later */ };
-const helper = require("gulp-ts-webpack-helper");
+const helper = require("gulp-ts-webpack-helper")(config);
 
 ```
 
