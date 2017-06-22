@@ -148,13 +148,13 @@ module.exports = function(userConfig = {}) {
     return task();
   };
 
-  const buildBeforeWatch = (target) => {
+  const buildBeforeWatch = (taskName, target) => {
     return new Promise((resolve, reject) => {
       if(isDirExist(tsOutDir(target))) {
         resolve();
       } else {
         gutil.log("Perform intial build...");
-        gulp.start(`build:${target}`, (err) => {
+        gulp.start(taskName, (err) => {
           if(err)
             reject(err);
           else
@@ -164,28 +164,38 @@ module.exports = function(userConfig = {}) {
     });
   };
 
+  const resTaskName = (name) => `${name}:resources`;
+  const tsTaskName = (name) => `${name}:typescript`;
   const createBuildTask = (name, target, { fork = false } = {}) => (gulp) => {
-    const resName = `${name}:resources`;
-    const tsName = `${name}:typescript`;
-    gulp.task(resName, resourcesTask(target));
-    gulp.task(tsName, fork ? tsExecTask(target) : tsTask(target));
-    gulp.task(name, [resName, tsName], webpackTask(target));
+    gulp.task(resTaskName(name), resourcesTask(target));
+    gulp.task(tsTaskName(name), fork ? tsExecTask(target) : tsTask(target));
+    gulp.task(name, [resTaskName(name), tsTaskName(name)], webpackTask(target));
   };
 
-  // const watchTask = (target) => () => {
-  //   buildBeforeWatch(debug).then(() => {
-  //     gulp.start(`res:${debug}:watch`);
-  //     gulp.start(`ts:${debug}:watch`);
-  //     gulp.start(`build:${debug}:watch`);
-  //   });
-  // };
+  const buildTaskName = (name) => `${name}:build`;
+  const webpackTaskName = (name) => `${name}:webpack`;
+  const createWatchTask = (name, target, { fork = false } = {}) => (gulp) => {
+    createBuildTask(buildTaskName(name), target, { fork })(gulp);
+    gulp.task(resTaskName(name), resourcesTask(target, { watch: true }));
+    gulp.task(tsTaskName(name), (fork ? tsExecTask : tsTask)(target, { watch: true }));
+    gulp.task(webpackTaskName(name), webpackTask(target, { watch: true }));
+
+    gulp.task(name, () => {
+      buildBeforeWatch(buildTaskName(name), target).then(() => {
+        gulp.start(webpackTaskName(name));
+        gulp.start(resTaskName(name));
+        gulp.start(tsTaskName(name));
+      });
+    });
+  };
 
   return {
     resourcesTask,
     tsTask,
     tsExecTask,
     webpackTask,
-    createBuildTask
+    createBuildTask,
+    createWatchTask
   };
 
 };
