@@ -9,7 +9,12 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^2.3.4",
-    "webpack": "^3.0.0"
+    "css-loader": "0.28.4",
+    "html-webpack-plugin": "2.28.0",
+    "ignore-loader": "0.1.2",
+    "source-map-loader": "0.2.1",
+    "style-loader": "0.18.1",
+    "typescript": "2.3.4",
+    "webpack": "2.3.3"
   }
 }

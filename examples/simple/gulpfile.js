@@ -17,3 +17,5 @@ gulp.task("watch:tsc:debug", helper.tsExecTask("debug", { watch: true }));
 
 gulp.task("webpack:debug", helper.webpackTask("debug"));
 gulp.task("watch:webpack:debug", helper.webpackTask("debug", { watch: true }));
+
+helper.createBuildTask("build:debug", "debug", { fork: true })(gulp);

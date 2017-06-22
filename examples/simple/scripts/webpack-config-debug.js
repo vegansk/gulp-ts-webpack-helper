@@ -1,3 +1,5 @@
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+
 module.exports = {
 
   entry: {
@@ -8,6 +10,28 @@ module.exports = {
     filename: "[name].js"
   },
 
-  devtool: "source-map"
+  module:{
+    rules: [
+      {
+        test: /\.js$/,
+        use: ["source-map-loader"],
+        enforce: "pre"
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.map$/,
+        use: ["ignore-loader"]
+      }
+    ]
+  },
+
+  devtool: "source-map",
+
+  plugins: [
+    new HtmlWebpackPlugin()
+  ]
 
 };
