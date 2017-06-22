@@ -21,3 +21,5 @@ gulp.task("watch:webpack:debug", helper.webpackTask("debug", { watch: true }));
 helper.createBuildTask("build:debug", "debug", { fork: true })(gulp);
 
 helper.createWatchTask("watch:debug", "debug", { fork: true })(gulp);
+
+helper.createDevServerTask("start:debug", "debug", { fork: true })(gulp);

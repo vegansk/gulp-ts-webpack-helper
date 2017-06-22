@@ -1,3 +1,5 @@
 import './style.css'
 
-console.log("Hello, world!")
+const msg = "Hello, world!!!";
+console.log(msg)
+window.document.write(msg)

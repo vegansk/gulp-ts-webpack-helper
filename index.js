@@ -33,6 +33,8 @@ function parseConfig(cfg) {
   res.webpackConfigs = cfg.webpackConfigs || {};
   // Port for webpack dev server
   res.devServerPort = cfg.devServerPort || parseInt(process.env.PORT || "8080");
+  // Startup timeout
+  res.devServerStartupTimeout = cfg.devServerStartupTimeout || 3000;
 
   // Compile js files with tsc
   res.allowJs = cfg.allowJs === undefined ? true : !!cfg.allowJs;
@@ -82,8 +84,6 @@ module.exports = function(userConfig = {}) {
 
   const webpackConfig = (target) => {
     const cfg = config.webpackConfigs[target] || config.webpackConfig;
-    if(typeof cfg === "string")
-      return require(path.join(process.cwd(), cfg));
     return cfg;
   };
 
@@ -189,13 +189,48 @@ module.exports = function(userConfig = {}) {
     });
   };
 
+  const webpackDevServerExecTask = (target) => () => {
+    const cfgPath = webpackConfig(target);
+    if(typeof cfgPath !== "string") {
+      console.dir(cfgPath);
+      throw new Error("webpack config patameter must be the path when using forked version of dev server");
+    }
+    const args = ["--config", path.join(process.cwd(), cfgPath)];
+    const devServer = spawn(scriptName("./node_modules/.bin/webpack-dev-server"), args, { stdio: "inherit", shell: true });
+    devServer.on("close", (code) => {
+      if(code !== 0)
+        cb(new Error(`devServer exited with the code ${code}`));
+      else
+        cb();
+    });
+  };
+
+  const devServerTaskName = (name) => `${name}:devserver`;
+  const createDevServerTask = (name, target, { fork = false } = {}) => (gulp) => {
+    createBuildTask(buildTaskName(name), target, { fork })(gulp);
+    gulp.task(resTaskName(name), resourcesTask(target, { watch: true }));
+    gulp.task(tsTaskName(name), (fork ? tsExecTask : tsTask)(target, { watch: true }));
+    gulp.task(devServerTaskName(name), webpackDevServerExecTask(target));
+
+    gulp.task(name, () => {
+      buildBeforeWatch(buildTaskName(name), target).then(() => {
+        gulp.start(devServerTaskName(name));
+        setTimeout(() => {
+          gulp.start(resTaskName(name));
+          gulp.start(tsTaskName(name));
+        }, config.devServerStartupTimeout);
+      });
+    });
+  };
+
   return {
     resourcesTask,
     tsTask,
     tsExecTask,
     webpackTask,
     createBuildTask,
-    createWatchTask
+    createWatchTask,
+    createDevServerTask
   };
 
 };
