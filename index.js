@@ -66,9 +66,9 @@ module.exports = function(userConfig = {}) {
           .pipe(gulp.dest(tsOutDir(target)));
 
     if(watch) {
-      gulpWatch(srcGlob, task);
+      return gulpWatch(srcGlob, { verbose: true }, task);
     } else
-      task();
+      return task;
   };
 
   return {
