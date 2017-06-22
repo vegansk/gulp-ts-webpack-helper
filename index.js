@@ -25,6 +25,10 @@ function parseConfig(cfg) {
   // tsconfig.json location or the object with parameters
   res.tsconfig = cfg.tsconfig || {};
 
+  // Single configuration file/object
+  res.webpackConfig = cfg.webpackConfig || {};
+  // Multiple configuration files/objects for targets
+  res.webpackConfigs = cfg.webpackConfigs || {};
   // Port for webpack dev server
   res.devServerPort = cfg.devServerPort || parseInt(process.env.PORT || "8080");
 
@@ -52,6 +56,19 @@ module.exports = function(userConfig = {}) {
 
   const tsOutDir = (target) => path.join(config.tsOutDir, target);
 
+  const tsOutGlob = (target) => `${tsOutDir(target)}/**/*`;
+
+  const outDir = (target) => path.join(config.outDir, target);
+
+  const scriptName = (name) => path.normalize(process.platform === 'win32' ? `${name}.cmd` : name);
+
+  const webpackConfig = (target) => {
+    const cfg = config.webpackConfigs[target] || config.webpackConfig;
+    if(typeof cfg === "string")
+      return require(path.join(process.cwd(), cfg));
+    return cfg;
+  };
+
   const tsTask = (target, { watch = false } = {}) => () => {
     const tsProject = ts.createProject(config.tsconfig);
 
@@ -71,8 +88,6 @@ module.exports = function(userConfig = {}) {
       return task;
   };
 
-  const scriptName = (name) => path.normalize(process.platform === 'win32' ? `${name}.cmd` : name);
-
   const tsExecTask = (target, { watch = false } = {}) => (cb) => {
     if(typeof config.tsconfig !== "string") {
       cb(new Error("tsconfig property must be the path when using tsExecTask"));
@@ -90,10 +105,24 @@ module.exports = function(userConfig = {}) {
     });
   };
 
+  const webpackTask = (target, { watch = false } = {}) => () => {
+    const task = () => gulp.src(tsOutGlob(target))
+          .pipe(plumber())
+          .pipe(clean(outDir(target)))
+          .pipe(webpackStream(
+            Object.assign({}, webpackConfig(target), {
+              watch
+            }),
+            webpack
+          ))
+          .pipe(gulp.dest(outDir(target)));
+    return task();
+  };
 
   return {
     tsTask,
-    tsExecTask
+    tsExecTask,
+    webpackTask
   };
 
 };
